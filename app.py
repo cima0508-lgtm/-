@@ -3,19 +3,35 @@ import pandas as pd
 from datetime import datetime, timedelta
 
 # --- ページ設定 ---
+# page_iconに画像のパスを追加しました
 st.set_page_config(
     page_title="芦北の「たんぼ」",
-    page_icon="ine_icon_1024.png", # 拡張子を.pngに変更
+    page_icon="ine_icon_1024.jpg", # ここを追加
     layout="centered"
 )
 
-# ブラウザ翻訳防止
+st.title("芦北の「たんぼ」アプリ")
+st.write("アイコンが設定されました！")
+
+# ▼ 追加：画面上部の余白を削る設定
+st.markdown("""
+    <style>
+        .block-container {
+            padding-top: 1rem;
+            padding-bottom: 0rem;
+        }
+    </style>
+    """, unsafe_allow_html=True)
+
+# ブラウザの自動翻訳を防ぐための設定
 st.markdown('<meta name="google" content="notranslate">', unsafe_allow_html=True)
 st.markdown('<html lang="ja">', unsafe_allow_html=True)
 
-# --- タイトル表示 ---
-st.markdown("<h2 style='text-align: center; font-size: 24px;'>🌾 水稲生育・収穫システム</h2>", unsafe_allow_html=True)
-st.markdown("<h3 style='text-align: center; font-size: 18px; color: #555;'>芦北の「たんぼ」</h3>", unsafe_allow_html=True)
+# --- タイトルとサブタイトルの表示 ---
+# 念のため、タイトル自体の上のマージンも0に指定しておきます
+st.markdown("<h2 style='text-align: center; font-size: 24px; margin-top: 0;'>🌾 水稲生育・収穫システム</h2>", unsafe_allow_html=True)
+st.markdown("<h3 style='text-align: center; font-size: 18px; color: #555; margin-top: -10px;'>芦北の「たんぼ」</h3>", unsafe_allow_html=True)
+
 
 # --- データの読み込み関数 ---
 @st.cache_data
@@ -50,6 +66,16 @@ def predict_harvest(heading_date, target_temp, current_temps, last_temps, correc
             return check_date, accumulated_temp, True
         check_date += timedelta(days=1)
     return None, 0, False
+
+# ==============================================================================
+# 💡 ここに移動してください（カレンダーを使う関数は先に定義）
+# ==============================================================================
+def color_rows(row):
+    if "出穂(基準)" in str(row['作業項目']): return ['color: #FF0000; font-weight: bold;'] * len(row)
+    if "収穫適期" in str(row['作業項目']): return ['color: #008000; font-weight: bold;'] * len(row)
+    if not row['確定']: return ['color: #A0A0A0; font-weight: normal;'] * len(row)
+    return ['color: #000000; font-weight: bold;'] * len(row)
+# ==============================================================================
 
 # --- メイン処理 ---
 df = load_master_data()
@@ -133,19 +159,24 @@ last_temps = load_temp_data(f"{current_year-1}data.csv")
 if actual_heading_date:
     base_heading_date = actual_heading_date
     status_msg = "✅ 出穂実績に基づき計算"
+    # 表示用の日付ラベルを作成
+    date_label = f"📅 出穂実績日: {actual_heading_date.strftime('%Y/%m/%d')}"
 else:
     base_heading_date = planting_date + timedelta(days=int(row["出穂までの日数"]))
     status_msg = "💡 予測出穂日に基づき計算"
-
-correction = (row["圃場標高"] - row["アメダス標高"]) / 100 * 0.6
-harvest_date, total_temp, is_forecast = predict_harvest(base_heading_date, row["目標積算温度（収穫）"], current_temps, last_temps, correction)
+    # 表示用の日付ラベルを作成
+    date_label = f"📅 設定田植日: {planting_date.strftime('%Y/%m/%d')}"
 
 # ==========================================
 # 🚀 画面表示ここから
 # ==========================================
 
-# 1. 📍 圃場情報
-st.info(f"📍 **{row['圃場名']}** {status_msg}")
+# 1. 📍 圃場情報（日付情報を追加して表示）
+st.info(f"📍 **{row['圃場名']}**　({date_label})\n\n{status_msg}")
+
+correction = (row["圃場標高"] - row["アメダス標高"]) / 100 * 0.6
+harvest_date, total_temp, is_forecast = predict_harvest(base_heading_date, row["目標積算温度（収穫）"], current_temps, last_temps, correction)
+
 
 # 2. 💧 水管理・防除パネル（ボタン判定をここに直結）
 st.sidebar.markdown("---")
@@ -155,7 +186,22 @@ if st.sidebar.button("💧 水管理・防除を確認"):
 
 # 「表示フラグ」がTrueの時だけ、カレンダーの上に表示する
 if st.session_state.show_water:
-    st.subheader("💧 生育ステージ別 水管理・防除")
+
+    # ▼ タイトルサイズをF3相当に変更（中央寄せ）
+    st.markdown(
+        """
+        <div style="
+            text-align:center;
+            font-size:18px;
+            font-weight:600;
+            margin-bottom:10px;
+        ">
+        💧 生育ステージ別 水管理・防除
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
     html_content = """
     <div style="font-family: sans-serif; background-color: #f9f9f9; padding: 8px; border-radius: 8px;">
         <style>
@@ -174,18 +220,21 @@ if st.session_state.show_water:
     </div>
     """
     st.components.v1.html(html_content, height=380, scrolling=True)
-    
+
     # 閉じるボタン
     if st.button("❌ 管理画面を閉じる"):
         st.session_state.show_water = False
         st.rerun()
-    
+
     st.markdown("---")
 
-# 3. 📅 工程カレンダー
+# --- 3. 📅 工程カレンダー ---
 st.write("### 📅 工程カレンダー")
 
+# 計算がうまくいっているか、念のため日付を再確認
 today_val = datetime.now().date()
+
+# リストの作成（ここがエラーで止まっていないか確認）
 data_list = [
     {"作業項目": "🚜 中干し開始目安", "予定日": (planting_date + timedelta(days=40)), "確定": today_val >= (planting_date + timedelta(days=40))},
     {"作業項目": "💎 穂肥１", "予定日": (base_heading_date - timedelta(days=25)), "確定": today_val >= (base_heading_date - timedelta(days=25))},
@@ -199,18 +248,29 @@ data_list = [
     {"作業項目": "🌾 収穫適期(予測)", "予定日": harvest_date if harvest_date else "計算中...", "確定": False},
 ]
 
+# データフレームに変換
 df_display = pd.DataFrame(data_list)
+
+# 日付のフォーマット変換（エラー回避のため hasattr を使用）
 df_display["予定日"] = df_display["予定日"].apply(lambda x: x.strftime('%m/%d') if hasattr(x, 'strftime') else x)
 
-def color_rows(row):
-    if "出穂(基準)" in str(row['作業項目']): return ['color: #FF0000; font-weight: bold;'] * len(row)
-    if "収穫適期" in str(row['作業項目']): return ['color: #008000; font-weight: bold;'] * len(row)
-    if not row['確定']: return ['color: #A0A0A0; font-weight: normal;'] * len(row)
-    return ['color: #000000; font-weight: bold;'] * len(row)
+# テーブルの表示（ここが表示の本体です）
+st.dataframe(
+    df_display.style.apply(color_rows, axis=1),
+    width=600,
+    hide_index=True
+)
 
-st.dataframe(df_display.style.apply(color_rows, axis=1), width=600, column_config={"確定": None}, hide_index=True)
-st.caption("※ 中干しは1株の茎数が20〜25本になったら開始してください。 / ※ 草刈は出穂14日前までに済ませてください。")
-st.write(f"（※標高補正: {correction:.2f}℃ を減算）")
+# 注釈（文字サイズを小さくして1行に収める工夫）
+st.markdown(
+    f"""
+    <div style="font-size: 11px; color: gray; line-height: 1.2; margin-top: 5px;">
+        ※中干し:茎数20-25本で開始 / ※草刈:出穂14日前までに完了<br>
+        （※標高補正: {correction:.2f}℃ 減算）
+    </div>
+    """,
+    unsafe_allow_html=True
+)
 
 # --- 説明書 ---
 st.write("---")
