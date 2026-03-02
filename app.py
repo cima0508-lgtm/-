@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 # page_iconに画像のパスを追加しました
 st.set_page_config(
     page_title="芦北の「たんぼ」",
-    page_icon="ine_icon_1024.jpg", # ここを追加
+    page_icon="ine_icon_1024.png", # ここを追加
     layout="centered"
 )
 
