@@ -2,11 +2,10 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime, timedelta
 
-
 # --- ページ設定 ---
 st.set_page_config(
     page_title="芦北の「たんぼ」",
-    page_icon="ine_icon_1024.png",
+    page_icon="ine_icon_1024.png", # 拡張子を.pngに変更
     layout="centered"
 )
 
