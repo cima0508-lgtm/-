@@ -23,7 +23,7 @@ st.markdown("""
         }
         /* サイドバーボタン自体の位置を少し調整したい場合 */
         .st-emotion-cache-zt5igj { 
-            top: 0.5rem;
+            top: 1.5rem;
         }
     </style>
 """, unsafe_allow_html=True)
