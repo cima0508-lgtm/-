@@ -13,26 +13,27 @@ st.set_page_config(
 # --- カスタムCSSで再調整（サイドバーボタンを救出） ---
 st.markdown("""
     <style>
-        /* 1. ページ全体の余白を最小化 */
+        /* 1. 全体の余白は少し余裕を持たせる（1.5rem） */
         .block-container {
-            padding-top: 1.0rem !important;
-            padding-bottom: 0rem !important;
+            padding-top: 1.5rem !important;
         }
 
-        /* 2. すべてのウィジェット（パーツ）間の隙間を強制削除 */
+        /* 2. 重ねるのではなく、隙間（gap）を完全にゼロにする */
         [data-testid="stVerticalBlock"] {
             gap: 0rem !important;
         }
         
-        /* 3. 各パーツ自体の上下の余白を削る */
-        div[data-testid="stVerticalBlock"] > div {
-            margin-top: -0.5rem !important;
-            margin-bottom: -0.5rem !important;
+        /* 3. 中のパーツの余白もゼロに統一 */
+        [data-testid="stVerticalBlock"] > div {
+            margin-top: 0rem !important;
+            margin-bottom: 0rem !important;
+            padding-top: 0rem !important;
+            padding-bottom: 0rem !important;
         }
 
-        /* 4. サイドバーボタンの位置 */
+        /* 4. サイドバーボタンを見える位置に固定 */
         button[kind="header"] {
-            top: 1.0rem !important;
+            top: 1.5rem !important;
         }
     </style>
 """, unsafe_allow_html=True)
