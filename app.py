@@ -14,8 +14,15 @@ st.set_page_config(
 # これによりタイトルが上に隠れるのを防ぎます
 st.markdown("""
     <style>
+        /* メインコンテンツ全体の上の余白を削る */
         .block-container {
-            padding-top: 2rem; /* 4remから2remに減らして、間隔を詰める */
+            padding-top: 0.5rem; 
+            padding-bottom: 0rem;
+        }
+        /* Streamlitのヘッダー自体の高さを調整 */
+        header {
+            visibility: hidden;
+            height: 0px;
         }
     </style>
 """, unsafe_allow_html=True)
