@@ -86,37 +86,41 @@ def predict_harvest(heading_date, target_temp, current_temps, last_temps, correc
 # 💡 ここに移動してください（カレンダーを使う関数は先に定義）
 # ==============================================================================
 def color_rows(row):
+    from datetime import date
     import datetime
-    # 今日の日付を確実に取得
+    
+    # 今日の日付
     today = datetime.date.today()
     
-    # 判定用の日付を準備
+    # 判定対象の日付（予定日）
     p_date = row['予定日']
     
-    # デフォルトは「実績（黒・太字）」
+    # 基本の色（実績・特別な項目は黒/太字）
     t_color = "#000000"
     f_weight = "bold"
 
-    # 1. 特別な項目の判定（最優先）
+    # A. 特別項目の色（最優先）
     if "出穂(基準)" in str(row['作業項目']):
         return ['color: #FF0000; font-weight: bold;'] * len(row)
     if "収穫適期" in str(row['作業項目']):
         return ['color: #008000; font-weight: bold;'] * len(row)
 
-    # 2. 未来かどうかの判定（今日を含めて未来ならグレー）
-    # 日付型であれば比較、文字なら今日より先とみなす（安全策）
+    # B. 未来・実績の判定
     try:
-        # p_date が datetime なら date に変換して比較
-        check_target = p_date.date() if hasattr(p_date, 'date') else p_date
-        
-        if check_target >= today:
-            t_color = "#999999" # PCより少し濃い目のグレー（スマホで見やすくするため）
+        # 日付型に変換して比較
+        if hasattr(p_date, 'date'):
+            compare_date = p_date.date()
+        elif isinstance(p_date, datetime.date):
+            compare_date = p_date
+        else:
+            compare_date = None
+
+        if compare_date and compare_date >= today:
+            # 未来ならグレー
+            t_color = "#999999"
             f_weight = "normal"
     except:
-        # 判定できない（すでに文字列になっている等）場合は、
-        # 「収穫」などのキーワードがなければ未来（グレー）とみなす設定
-        t_color = "#999999"
-        f_weight = "normal"
+        pass
 
     return [f'color: {t_color}; font-weight: {f_weight};'] * len(row)
 
@@ -270,11 +274,11 @@ if st.session_state.show_water:
         st.rerun()
 
     st.markdown("---")
-
+    
 # --- 3. 📅 工程カレンダー ---
 st.write("### 📅 工程カレンダー")
 
-# 【1】データの定義（名前を unique_data_list にして衝突を避けます）
+# 【1】データの定義（予定日の計算）
 unique_data_list = [
     {"作業項目": "🚜 中干し開始目安", "予定日": (planting_date + timedelta(days=40))},
     {"作業項目": "💎 穂肥１", "予定日": (base_heading_date - timedelta(days=25))},
@@ -291,18 +295,20 @@ unique_data_list = [
 # 【2】データフレームを作成
 final_df = pd.DataFrame(unique_data_list)
 
-# 【3】先に色判定を行う（日付型のまま判定）
+# 【3】重要：日付を「月/日」の文字に変える「前」に、色を判定させる
+# これで color_rows 関数が「今日より前か？」を正しく計算できます
 styled_final_df = final_df.style.apply(color_rows, axis=1)
 
-# 【4】表示用にデータを「月/日」に変換
+# 【4】スマホ・PC共通：見た目だけを「月/日」に書き換える
+# 判定（styled_final_df）は既に終わっているので、ここで文字にしても色は変わりません
 final_df["予定日"] = final_df["予定日"].apply(
     lambda x: x.strftime('%m/%d') if hasattr(x, 'strftime') else str(x)
 )
 
-# 【5】表示（これ1回だけ！）
+# 【5】表示（色情報を持った styled_final_df を指定）
 st.table(styled_final_df)
 
-# 注釈
+# --- 以下、注釈と説明書 ---
 st.markdown(
     f"""
     <div style="font-size: 11px; color: gray; line-height: 1.2; margin-top: 5px;">
@@ -313,6 +319,5 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# --- 説明書 ---
 st.write("---")
 st.download_button(label="📄 説明書をダウンロード", data="水稲栽培管理シミュレーター 説明書", file_name="readme.txt")
