@@ -15,7 +15,7 @@ st.markdown("""
     <style>
         .block-container {
             /* 0.5remだとボタンと重なる可能性があるので、1.5rem程度で様子見 */
-            padding-top: 1.5rem; 
+            padding-top: 2.5rem; 
         }
         header {
             /* visibility: hidden; を削除してボタンを見えるようにします */
