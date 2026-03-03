@@ -318,13 +318,15 @@ for item in raw_data:
     
     formatted_data.append({"作業項目": colored_label, "予定日": colored_date})
 
-# C. データフレームにして表示
+# C. データフレームにして表示（ここを幅100%に書き換え）
 df_final = pd.DataFrame(formatted_data)
+st.write(
+    df_final.to_html(escape=False, index=False, justify='center', border=0)
+    .replace('<table', '<table style="width:100%; border-collapse:collapse; text-align:left;"'), 
+    unsafe_allow_html=True
+)
 
-# st.write ではなく HTMLをそのまま出す設定で表示
-st.write(df_final.to_html(escape=False, index=False), unsafe_allow_html=True)
-
-# --- 以下、注釈と説明書 ---
+# --- ここから注釈：これはそのまま残ります ---
 st.markdown(
     f"""
     <div style="font-size: 11px; color: gray; line-height: 1.2; margin-top: 5px;">
