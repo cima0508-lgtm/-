@@ -274,6 +274,19 @@ if st.session_state.show_water:
 # --- 3. 📅 工程カレンダー ---
 st.write("### 📅 工程カレンダー")
 
+df_display = pd.DataFrame(data_list)
+
+# 重要：先に色を決める
+styled_df = df_display.style.apply(color_rows, axis=1)
+
+# その後で、表示用データを文字に変える
+df_display["予定日"] = df_display["予定日"].apply(
+    lambda x: x.strftime('%m/%d') if hasattr(x, 'strftime') else str(x)
+)
+
+# 最後に表示
+st.table(styled_df)
+
 # 【1】データの定義（ここは変更なし）
 today_val = datetime.now().date()
 data_list = [
