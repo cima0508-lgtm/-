@@ -274,7 +274,7 @@ if st.session_state.show_water:
 # --- 3. 📅 工程カレンダー ---
 st.write("### 📅 工程カレンダー")
 
-# 【1】データの定義（予定日の計算）
+# 【1】データの定義（毎回新しく作り直す）
 unique_data_list = [
     {"作業項目": "🚜 中干し開始目安", "予定日": (planting_date + timedelta(days=40))},
     {"作業項目": "💎 穂肥１", "予定日": (base_heading_date - timedelta(days=25))},
@@ -288,20 +288,21 @@ unique_data_list = [
     {"作業項目": "🌾 収穫適期(予測)", "予定日": harvest_date if harvest_date else "計算中..."},
 ]
 
-# 【2】データフレームを作成
+# 【2】データフレーム化
 final_df = pd.DataFrame(unique_data_list)
 
-# 【3】重要：日付を「月/日」の文字に変える「前」に、色を判定させる
-# これで color_rows 関数が「今日より前か？」を正しく計算できます
+# 【3】判定用の「今日」をここで再定義（スマホの再計算を促す）
+TODAY_FOR_COLOR = datetime.now().date()
+
+# 【4】色を塗る
 styled_final_df = final_df.style.apply(color_rows, axis=1)
 
-# 【4】スマホ・PC共通：見た目だけを「月/日」に書き換える
-# 判定（styled_final_df）は既に終わっているので、ここで文字にしても色は変わりません
+# 【5】見た目を整える
 final_df["予定日"] = final_df["予定日"].apply(
     lambda x: x.strftime('%m/%d') if hasattr(x, 'strftime') else str(x)
 )
 
-# 【5】表示（色情報を持った styled_final_df を指定）
+# 【6】表示
 st.table(styled_final_df)
 
 # --- 以下、注釈と説明書 ---
