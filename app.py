@@ -10,21 +10,18 @@ st.set_page_config(
     initial_sidebar_state="collapsed"          # スマホ表示のためにサイドバーを閉じておく
 )
 
-# アイコンの画像をページ上部に表示するコードを追加（オプション）
-# st.image("ine_icon_1024.png", width=100)
-
-st.title("芦北の「たんぼ」")
-st.write("アイコンが設定されました！")
-
-# ▼ 追加：画面上部の余白を削る設定
+# --- カスタムCSSで上部余白を調整 ---
+# これによりタイトルが上に隠れるのを防ぎます
 st.markdown("""
     <style>
         .block-container {
             padding-top: 1rem;
-            padding-bottom: 0rem;
         }
     </style>
-    """, unsafe_allow_html=True)
+""", unsafe_allow_html=True)
+
+# タイトルを中央に配置してみる
+st.markdown("<h1 style='text-align: center;'>芦北の「たんぼ」</h1>", unsafe_allow_html=True)
 
 # ブラウザの自動翻訳を防ぐための設定
 st.markdown('<meta name="google" content="notranslate">', unsafe_allow_html=True)
