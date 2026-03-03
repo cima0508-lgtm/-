@@ -13,27 +13,27 @@ st.set_page_config(
 # --- カスタムCSSで再調整（サイドバーボタンを救出） ---
 st.markdown("""
     <style>
-        /* 1. 全体の余白は少し余裕を持たせる（1.5rem） */
+        /* 1. 最上部の文字が消えないよう、上の余白を少し広めに確保 (2.5rem) */
         .block-container {
-            padding-top: 1.5rem !important;
+            padding-top: 2.5rem !important;
         }
 
-        /* 2. 重ねるのではなく、隙間（gap）を完全にゼロにする */
+        /* 2. 要素間の隙間(gap)を完全にゼロにする */
         [data-testid="stVerticalBlock"] {
             gap: 0rem !important;
         }
         
-        /* 3. 中のパーツの余白もゼロに統一 */
+        /* 3. 各パーツ(圃場名、日付、表)の上下の余白を最小化 */
         [data-testid="stVerticalBlock"] > div {
             margin-top: 0rem !important;
-            margin-bottom: 0rem !important;
+            margin-bottom: 0.2rem !important;
             padding-top: 0rem !important;
             padding-bottom: 0rem !important;
         }
 
-        /* 4. サイドバーボタンを見える位置に固定 */
+        /* 4. サイドバーボタンをタイトルの邪魔にならない位置へ */
         button[kind="header"] {
-            top: 1.5rem !important;
+            top: 1.0rem !important;
         }
     </style>
 """, unsafe_allow_html=True)
