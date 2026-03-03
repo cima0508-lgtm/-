@@ -274,21 +274,7 @@ if st.session_state.show_water:
 # --- 3. 📅 工程カレンダー ---
 st.write("### 📅 工程カレンダー")
 
-df_display = pd.DataFrame(data_list)
-
-# 重要：先に色を決める
-styled_df = df_display.style.apply(color_rows, axis=1)
-
-# その後で、表示用データを文字に変える
-df_display["予定日"] = df_display["予定日"].apply(
-    lambda x: x.strftime('%m/%d') if hasattr(x, 'strftime') else str(x)
-)
-
-# 最後に表示
-st.table(styled_df)
-
-# 【1】データの定義（ここは変更なし）
-today_val = datetime.now().date()
+# 【1】まず、データを定義する（これを最初に持ってくることでエラーを防ぎます）
 data_list = [
     {"作業項目": "🚜 中干し開始目安", "予定日": (planting_date + timedelta(days=40))},
     {"作業項目": "💎 穂肥１", "予定日": (base_heading_date - timedelta(days=25))},
@@ -305,19 +291,18 @@ data_list = [
 # 【2】データフレームを作成
 df_display = pd.DataFrame(data_list)
 
-# 【3】ここがポイント：色塗り判定を「先」に行う
-# まだ「予定日」が日付データの状態なので判定が正確です
+# 【3】先に色判定を行う（日付型のまま判定）
 styled_df = df_display.style.apply(color_rows, axis=1)
 
-# 【4】ここがスマホ対策！：データを強制的に「月/日」の文字列に変換する
-# styled_dfを作った後であれば、ここで文字に変えても色は維持されます
+# 【4】表示用にデータを「月/日」に変換
 df_display["予定日"] = df_display["予定日"].apply(
     lambda x: x.strftime('%m/%d') if hasattr(x, 'strftime') else str(x)
 )
 
-# 【5】表示（文字変換後の df_display ではなく、色情報を持つ styled_df を表示）
+# 【5】表示（1回だけ！）
 st.table(styled_df)
 
+# 注釈
 st.markdown(
     f"""
     <div style="font-size: 11px; color: gray; line-height: 1.2; margin-top: 5px;">
@@ -327,8 +312,6 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
-
-# --- 以下、説明書などのコードが続く ---
 
 # --- 説明書 ---
 st.write("---")
