@@ -274,8 +274,8 @@ if st.session_state.show_water:
 # --- 3. 📅 工程カレンダー ---
 st.write("### 📅 工程カレンダー")
 
-# 【1】まず、データを定義する（これを最初に持ってくることでエラーを防ぎます）
-data_list = [
+# 【1】データの定義（名前を unique_data_list にして衝突を避けます）
+unique_data_list = [
     {"作業項目": "🚜 中干し開始目安", "予定日": (planting_date + timedelta(days=40))},
     {"作業項目": "💎 穂肥１", "予定日": (base_heading_date - timedelta(days=25))},
     {"作業項目": "🌿 幼穂形成期", "予定日": (base_heading_date - timedelta(days=20))},
@@ -289,18 +289,18 @@ data_list = [
 ]
 
 # 【2】データフレームを作成
-df_display = pd.DataFrame(data_list)
+final_df = pd.DataFrame(unique_data_list)
 
 # 【3】先に色判定を行う（日付型のまま判定）
-styled_df = df_display.style.apply(color_rows, axis=1)
+styled_final_df = final_df.style.apply(color_rows, axis=1)
 
 # 【4】表示用にデータを「月/日」に変換
-df_display["予定日"] = df_display["予定日"].apply(
+final_df["予定日"] = final_df["予定日"].apply(
     lambda x: x.strftime('%m/%d') if hasattr(x, 'strftime') else str(x)
 )
 
-# 【5】表示（1回だけ！）
-st.table(styled_df)
+# 【5】表示（これ1回だけ！）
+st.table(styled_final_df)
 
 # 注釈
 st.markdown(
