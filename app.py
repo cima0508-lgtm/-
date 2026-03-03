@@ -247,9 +247,12 @@ if st.session_state.show_water:
 st.write("### 📅 工程カレンダー")
 
 # 計算がうまくいっているか、念のため日付を再確認
+# --- 3. 📅 工程カレンダー ---
+st.write("### 📅 工程カレンダー")
+
 today_val = datetime.now().date()
 
-# リストの作成（「確定」の行をすべて削除して、シンプルにします）
+# 「確定」の行をすべて削除して、シンプルにします
 data_list = [
     {"作業項目": "🚜 中干し開始目安", "予定日": (planting_date + timedelta(days=40))},
     {"作業項目": "💎 穂肥１", "予定日": (base_heading_date - timedelta(days=25))},
@@ -269,11 +272,11 @@ df_display = pd.DataFrame(data_list)
 # 日付のフォーマット変換（エラー回避のため hasattr を使用）
 df_display["予定日"] = df_display["予定日"].apply(lambda x: x.strftime('%m/%d') if hasattr(x, 'strftime') else x)
 
-# テーブルの表示（ここが表示の本体です）
+# --- ここを書き換えます ---
 st.dataframe(
-    df_display.style.apply(color_rows, axis=1),
-    width=600,
-    hide_index=True
+    df_display,
+    use_container_width=True, # 画面いっぱいに広げる
+    hide_index=True           # 左側の「0, 1, 2...」を消す
 )
 
 # 注釈（文字サイズを小さくして1行に収める工夫）
