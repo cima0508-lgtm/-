@@ -274,36 +274,55 @@ if st.session_state.show_water:
 # --- 3. 📅 工程カレンダー ---
 st.write("### 📅 工程カレンダー")
 
-# 【1】データの定義（毎回新しく作り直す）
-unique_data_list = [
-    {"作業項目": "🚜 中干し開始目安", "予定日": (planting_date + timedelta(days=40))},
-    {"作業項目": "💎 穂肥１", "予定日": (base_heading_date - timedelta(days=25))},
-    {"作業項目": "🌿 幼穂形成期", "予定日": (base_heading_date - timedelta(days=20))},
-    {"作業項目": "💎 穂肥２", "予定日": (base_heading_date - timedelta(days=10))},
-    {"作業項目": "🌾 穂ばらみ期", "予定日": (base_heading_date - timedelta(days=7))},
-    {"作業項目": "🚩 出穂(基準)", "予定日": base_heading_date},
-    {"作業項目": "💧 乳熟期", "予定日": (base_heading_date + timedelta(days=10))},
-    {"作業項目": "☁️ 登熟期", "予定日": (base_heading_date + timedelta(days=20))},
-    {"作業項目": "🚿 落水期", "予定日": (base_heading_date + timedelta(days=30))},
-    {"作業項目": "🌾 収穫適期(予測)", "予定日": harvest_date if harvest_date else "計算中..."},
+today_val = datetime.now().date()
+
+# A. まず、計算用の生データを作る
+raw_data = [
+    {"項目": "🚜 中干し開始目安", "日": (planting_date + timedelta(days=40))},
+    {"項目": "💎 穂肥１", "日": (base_heading_date - timedelta(days=25))},
+    {"項目": "🌿 幼穂形成期", "日": (base_heading_date - timedelta(days=20))},
+    {"項目": "💎 穂肥２", "日": (base_heading_date - timedelta(days=10))},
+    {"項目": "🌾 穂ばらみ期", "日": (base_heading_date - timedelta(days=7))},
+    {"項目": "🚩 出穂(基準)", "日": base_heading_date},
+    {"項目": "💧 乳熟期", "日": (base_heading_date + timedelta(days=10))},
+    {"項目": "☁️ 登熟期", "予定日": (base_heading_date + timedelta(days=20))}, # ここだけ「予定日」になっていたのを修正
+    {"項目": "🚿 落水期", "日": (base_heading_date + timedelta(days=30))},
+    {"項目": "🌾 収穫適期(予測)", "日": harvest_date if harvest_date else "計算中..."},
 ]
 
-# 【2】データフレーム化
-final_df = pd.DataFrame(unique_data_list)
+# B. 表示用のデータを、HTMLタグ付きで作成する（ここが最強の解決策）
+formatted_data = []
+for item in raw_data:
+    target_date = item.get("日") or item.get("予定日")
+    label = item["項目"]
+    
+    # 1. 色の決定
+    color = "#000000" # デフォルトは黒
+    weight = "bold"   # デフォルトは太字
+    
+    if "出穂(基準)" in label:
+        color = "#FF0000" # 赤
+    elif "収穫適期" in label:
+        color = "#008000" # 緑
+    elif hasattr(target_date, 'year'): # 日付データの場合
+        if target_date >= today_val:
+            color = "#999999" # 未来はグレー
+            weight = "normal" # 未来は細字
+            
+    # 2. 日付を文字にする
+    date_str = target_date.strftime('%m/%d') if hasattr(target_date, 'strftime') else str(target_date)
+    
+    # 3. HTMLで色を直接埋め込む
+    colored_label = f'<span style="color:{color}; font-weight:{weight};">{label}</span>'
+    colored_date = f'<span style="color:{color}; font-weight:{weight};">{date_str}</span>'
+    
+    formatted_data.append({"作業項目": colored_label, "予定日": colored_date})
 
-# 【3】判定用の「今日」をここで再定義（スマホの再計算を促す）
-TODAY_FOR_COLOR = datetime.now().date()
+# C. データフレームにして表示
+df_final = pd.DataFrame(formatted_data)
 
-# 【4】色を塗る
-styled_final_df = final_df.style.apply(color_rows, axis=1)
-
-# 【5】見た目を整える
-final_df["予定日"] = final_df["予定日"].apply(
-    lambda x: x.strftime('%m/%d') if hasattr(x, 'strftime') else str(x)
-)
-
-# 【6】表示
-st.table(styled_final_df)
+# st.write ではなく HTMLをそのまま出す設定で表示
+st.write(df_final.to_html(escape=False, index=False), unsafe_allow_html=True)
 
 # --- 以下、注釈と説明書 ---
 st.markdown(
