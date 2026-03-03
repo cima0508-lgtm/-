@@ -3,14 +3,17 @@ import pandas as pd
 from datetime import datetime, timedelta
 
 # --- ページ設定 ---
-# page_iconに画像のパスを追加しました
 st.set_page_config(
-    page_title="芦北の「たんぼ」",
-    page_icon="ine_icon_1024.png", # ここを追加
-    layout="centered"
+    page_title="芦北の「たんぼ」",                # タブのタイトル
+    page_icon="ine_icon_1024.png",             # 画像ファイルを指定
+    layout="wide",                             # "centered" から "wide" に変更して崩れを確認
+    initial_sidebar_state="collapsed"          # スマホ表示のためにサイドバーを閉じておく
 )
 
-st.title("芦北の「たんぼ」アプリ")
+# アイコンの画像をページ上部に表示するコードを追加（オプション）
+# st.image("ine_icon_1024.png", width=100)
+
+st.title("芦北の「たんぼ」")
 st.write("アイコンが設定されました！")
 
 # ▼ 追加：画面上部の余白を削る設定
