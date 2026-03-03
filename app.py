@@ -87,40 +87,38 @@ def predict_harvest(heading_date, target_temp, current_temps, last_temps, correc
 # ==============================================================================
 def color_rows(row):
     import datetime
+    # 今日の日付を確実に取得
     today = datetime.date.today()
     
-    # 色のデフォルト設定
-    text_color = "#000000" # 実績は黒
-    font_weight = "bold"   # 実績は太字
+    # 判定用の日付を準備
+    p_date = row['予定日']
+    
+    # デフォルトは「実績（黒・太字）」
+    t_color = "#000000"
+    f_weight = "bold"
 
-    # 1. 🚩 出穂(基準) は赤
+    # 1. 特別な項目の判定（最優先）
     if "出穂(基準)" in str(row['作業項目']):
         return ['color: #FF0000; font-weight: bold;'] * len(row)
-    
-    # 2. 🌾 収穫適期 は緑
     if "収穫適期" in str(row['作業項目']):
         return ['color: #008000; font-weight: bold;'] * len(row)
 
-    # 3. 日付による未来判定（グレーにする条件）
-    p_date = row['予定日']
-
-    # 予定日が「今日以降」ならグレーにする判定
-    is_future = False
+    # 2. 未来かどうかの判定（今日を含めて未来ならグレー）
+    # 日付型であれば比較、文字なら今日より先とみなす（安全策）
     try:
-        if hasattr(p_date, 'date'): # datetime型の場合
-            if p_date.date() >= today:
-                is_future = True
-        elif isinstance(p_date, datetime.date): # date型の場合
-            if p_date >= today:
-                is_future = True
+        # p_date が datetime なら date に変換して比較
+        check_target = p_date.date() if hasattr(p_date, 'date') else p_date
+        
+        if check_target >= today:
+            t_color = "#999999" # PCより少し濃い目のグレー（スマホで見やすくするため）
+            f_weight = "normal"
     except:
-        pass # 判定できない場合は黒（濃い色）のまま
+        # 判定できない（すでに文字列になっている等）場合は、
+        # 「収穫」などのキーワードがなければ未来（グレー）とみなす設定
+        t_color = "#999999"
+        f_weight = "normal"
 
-    if is_future:
-        text_color = "#A0A0A0" # 未来はグレー
-        font_weight = "normal" # 未来は細字
-
-    return [f'color: {text_color}; font-weight: {font_weight};'] * len(row)
+    return [f'color: {t_color}; font-weight: {f_weight};'] * len(row)
 
 # --- メイン処理 ---
 df = load_master_data()
