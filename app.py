@@ -13,17 +13,20 @@ st.set_page_config(
 # --- カスタムCSSで再調整（サイドバーボタンを救出） ---
 st.markdown("""
     <style>
+        /* 1. 全体の余白をさらに調整 */
         .block-container {
-            /* 0.5remだとボタンと重なる可能性があるので、1.5rem程度で様子見 */
-            padding-top: 1.0rem; 
+            padding-top: 1.5rem; 
         }
-        header {
-            /* visibility: hidden; を削除してボタンを見えるようにします */
-            height: 3rem; /* 高さを抑えつつボタンの居場所を確保 */
+
+        /* 2. 行間の隙間（gap）を最小限にする */
+        [data-testid="stVerticalBlock"] > div {
+            flex-direction: column;
+            gap: 0.1rem; /* デフォルトの大きな隙間を0.1rem（ほぼゼロ）に */
         }
-        /* サイドバーボタン自体の位置を少し調整したい場合 */
-        .st-emotion-cache-zt5igj { 
-            top: 1.5rem;
+
+        /* 3. サイドバーボタンの位置 */
+        button[kind="header"] {
+            top: 1.5rem !important;
         }
     </style>
 """, unsafe_allow_html=True)
