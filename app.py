@@ -249,18 +249,18 @@ st.write("### 📅 工程カレンダー")
 # 計算がうまくいっているか、念のため日付を再確認
 today_val = datetime.now().date()
 
-# リストの作成（ここがエラーで止まっていないか確認）
+# リストの作成（「確定」の行をすべて削除して、シンプルにします）
 data_list = [
-    {"作業項目": "🚜 中干し開始目安", "予定日": (planting_date + timedelta(days=40)), "確定": today_val >= (planting_date + timedelta(days=40))},
-    {"作業項目": "💎 穂肥１", "予定日": (base_heading_date - timedelta(days=25)), "確定": today_val >= (base_heading_date - timedelta(days=25))},
-    {"作業項目": "🌿 幼穂形成期", "予定日": (base_heading_date - timedelta(days=20)), "確定": today_val >= (base_heading_date - timedelta(days=20))},
-    {"作業項目": "💎 穂肥２", "予定日": (base_heading_date - timedelta(days=10)), "確定": today_val >= (base_heading_date - timedelta(days=10))},
-    {"作業項目": "🌾 穂ばらみ期", "予定日": (base_heading_date - timedelta(days=7)), "確定": today_val >= (base_heading_date - timedelta(days=7))},
-    {"作業項目": "🚩 出穂(基準)", "予定日": base_heading_date, "確定": actual_heading_date is not None},
-    {"作業項目": "💧 乳熟期", "予定日": (base_heading_date + timedelta(days=10)), "確定": today_val >= (base_heading_date + timedelta(days=10))},
-    {"作業項目": "☁️ 登熟期", "予定日": (base_heading_date + timedelta(days=20)), "確定": today_val >= (base_heading_date + timedelta(days=20))},
-    {"作業項目": "🚿 落水期", "予定日": (base_heading_date + timedelta(days=30)), "確定": today_val >= (base_heading_date + timedelta(days=30))},
-    {"作業項目": "🌾 収穫適期(予測)", "予定日": harvest_date if harvest_date else "計算中...", "確定": False},
+    {"作業項目": "🚜 中干し開始目安", "予定日": (planting_date + timedelta(days=40))},
+    {"作業項目": "💎 穂肥１", "予定日": (base_heading_date - timedelta(days=25))},
+    {"作業項目": "🌿 幼穂形成期", "予定日": (base_heading_date - timedelta(days=20))},
+    {"作業項目": "💎 穂肥２", "予定日": (base_heading_date - timedelta(days=10))},
+    {"作業項目": "🌾 穂ばらみ期", "予定日": (base_heading_date - timedelta(days=7))},
+    {"作業項目": "🚩 出穂(基準)", "予定日": base_heading_date},
+    {"作業項目": "💧 乳熟期", "予定日": (base_heading_date + timedelta(days=10))},
+    {"作業項目": "☁️ 登熟期", "予定日": (base_heading_date + timedelta(days=20))},
+    {"作業項目": "🚿 落水期", "予定日": (base_heading_date + timedelta(days=30))},
+    {"作業項目": "🌾 収穫適期(予測)", "予定日": harvest_date if harvest_date else "計算中..."},
 ]
 
 # データフレームに変換
