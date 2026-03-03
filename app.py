@@ -85,42 +85,38 @@ def predict_harvest(heading_date, target_temp, current_temps, last_temps, correc
 # ==============================================================================
 # 💡 ここに移動してください（カレンダーを使う関数は先に定義）
 # ==============================================================================
+# 今日の日付を、関数の外で一回だけ確実に作る
+TODAY_FOR_COLOR = datetime.now().date()
+
 def color_rows(row):
-    from datetime import date
-    import datetime
+    # 外で作った TODAY_FOR_COLOR を使う
+    global TODAY_FOR_COLOR
     
-    # 今日の日付
-    today = datetime.date.today()
-    
-    # 判定対象の日付（予定日）
     p_date = row['予定日']
     
-    # 基本の色（実績・特別な項目は黒/太字）
-    t_color = "#000000"
-    f_weight = "bold"
+    # デフォルト設定
+    t_color = "#000000" # 実績（黒）
+    f_weight = "bold"   # 実績（太字）
 
-    # A. 特別項目の色（最優先）
+    # A. 特別項目（ここが最優先）
     if "出穂(基準)" in str(row['作業項目']):
         return ['color: #FF0000; font-weight: bold;'] * len(row)
     if "収穫適期" in str(row['作業項目']):
         return ['color: #008000; font-weight: bold;'] * len(row)
 
-    # B. 未来・実績の判定
+    # B. 未来判定
     try:
-        # 日付型に変換して比較
-        if hasattr(p_date, 'date'):
-            compare_date = p_date.date()
-        elif isinstance(p_date, datetime.date):
-            compare_date = p_date
-        else:
-            compare_date = None
-
-        if compare_date and compare_date >= today:
-            # 未来ならグレー
-            t_color = "#999999"
-            f_weight = "normal"
+        # 日付型に揃えて比較
+        compare_target = p_date.date() if hasattr(p_date, 'date') else p_date
+        
+        # 今日以降（未来）ならグレー
+        if compare_target >= TODAY_FOR_COLOR:
+            t_color = "#999999" # グレー
+            f_weight = "normal" # 細字
     except:
-        pass
+        # 判定に失敗したら、安全のために未来（グレー）扱いにする
+        t_color = "#999999"
+        f_weight = "normal"
 
     return [f'color: {t_color}; font-weight: {f_weight};'] * len(row)
 
