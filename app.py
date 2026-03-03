@@ -10,19 +10,20 @@ st.set_page_config(
     initial_sidebar_state="collapsed"          # スマホ表示のためにサイドバーを閉じておく
 )
 
-# --- カスタムCSSで上部余白を調整 ---
-# これによりタイトルが上に隠れるのを防ぎます
+# --- カスタムCSSで再調整（サイドバーボタンを救出） ---
 st.markdown("""
     <style>
-        /* メインコンテンツ全体の上の余白を削る */
         .block-container {
-            padding-top: 0.5rem; 
-            padding-bottom: 0rem;
+            /* 0.5remだとボタンと重なる可能性があるので、1.5rem程度で様子見 */
+            padding-top: 1.5rem; 
         }
-        /* Streamlitのヘッダー自体の高さを調整 */
         header {
-            visibility: hidden;
-            height: 0px;
+            /* visibility: hidden; を削除してボタンを見えるようにします */
+            height: 3rem; /* 高さを抑えつつボタンの居場所を確保 */
+        }
+        /* サイドバーボタン自体の位置を少し調整したい場合 */
+        .st-emotion-cache-zt5igj { 
+            top: 0.5rem;
         }
     </style>
 """, unsafe_allow_html=True)
