@@ -15,12 +15,12 @@ st.set_page_config(
 st.markdown("""
     <style>
         .block-container {
-            padding-top: 1rem;
+            padding-top: 4rem; /* 1remから4remに増やして、さらに下に下げます */
         }
     </style>
 """, unsafe_allow_html=True)
 
-# タイトルを中央に配置してみる
+# タイトル表示
 st.markdown("<h1 style='text-align: center;'>芦北の「たんぼ」</h1>", unsafe_allow_html=True)
 
 # ブラウザの自動翻訳を防ぐための設定
