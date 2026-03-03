@@ -246,9 +246,8 @@ if st.session_state.show_water:
 # --- 3. 📅 工程カレンダー ---
 st.write("### 📅 工程カレンダー")
 
+# 【1】まず最初にデータを定義する（これで NameError を防ぎます）
 today_val = datetime.now().date()
-
-# 「確定」の行をすべて削除して、シンプルにします
 data_list = [
     {"作業項目": "🚜 中干し開始目安", "予定日": (planting_date + timedelta(days=40))},
     {"作業項目": "💎 穂肥１", "予定日": (base_heading_date - timedelta(days=25))},
@@ -262,20 +261,22 @@ data_list = [
     {"作業項目": "🌾 収穫適期(予測)", "予定日": harvest_date if harvest_date else "計算中..."},
 ]
 
-# データフレームに変換
+# 【2】データフレームを作成
 df_display = pd.DataFrame(data_list)
 
-# 日付のフォーマット変換（エラー回避のため hasattr を使用）
-df_display["予定日"] = df_display["予定日"].apply(lambda x: x.strftime('%m/%d') if hasattr(x, 'strftime') else x)
+# 【3】色塗りと日付フォーマットを一括適用
+# .style.apply で色を決め、.format で見た目を 05/20 にします
+try:
+    styled_df = df_display.style.apply(color_rows, axis=1).format({
+        "予定日": lambda x: x.strftime('%m/%d') if hasattr(x, 'strftime') else str(x)
+    })
+    # 表示
+    st.table(styled_df)
+except Exception as e:
+    # 万が一エラーが出た場合は普通の表を表示（全消え防止）
+    st.table(df_display)
 
-# --- ここを書き換えます ---
-st.dataframe(
-    df_display,
-    use_container_width=True, # 画面いっぱいに広げる
-    hide_index=True           # 左側の「0, 1, 2...」を消す
-)
-
-# 注釈（文字サイズを小さくして1行に収める工夫）
+# 【4】注釈を表示
 st.markdown(
     f"""
     <div style="font-size: 11px; color: gray; line-height: 1.2; margin-top: 5px;">
@@ -285,6 +286,8 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
+
+# --- 以下、説明書などのコードが続く ---
 
 # --- 説明書 ---
 st.write("---")
