@@ -215,7 +215,9 @@ else:
 # ==========================================
 
 # 1. 📍 圃場情報（日付情報を追加して表示）
-st.info(f"📍 **{row['圃場名']}**　({date_label})\n\n{status_msg}")
+# info枠を使わず、大きな文字で表示する場合
+st.markdown(f"### 🌾 {row['品種名']} （{row['圃場名']}）")
+st.write(f"{date_label} ／ {status_msg}")
 
 correction = (row["圃場標高"] - row["アメダス標高"]) / 100 * 0.6
 harvest_date, total_temp, is_forecast = predict_harvest(base_heading_date, row["目標積算温度（収穫）"], current_temps, last_temps, correction)
