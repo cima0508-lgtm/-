@@ -6,68 +6,19 @@ from datetime import datetime, timedelta
 st.set_page_config(
     page_title="芦北の「たんぼ」",
     page_icon="ine_icon_1024.png",
-    layout="centered",
+    layout="centered",                # wideよりcenteredの方がスマホでは安定します
     initial_sidebar_state="collapsed"
 )
 
-# ▼ 強制的に邪魔な要素を消去する設定
+# ▼ これだけ残しておくと、スマホで「一番上までスッキリ」見えます
 st.markdown("""
     <style>
-        /* 1. 画面上部のヘッダー（三本線メニューやGitHubバッジ）を完全に消去 */
-        header[data-testid="stHeader"] {
-            display: none !important;
-        }
-
-        /* 2. 右上のツールバーを非表示 */
-        div[data-testid="stToolbar"] {
-            display: none !important;
-        }
-
-        /* 3. 画面最上部の余白をゼロにする */
         .block-container {
-            padding-top: 0rem !important;
-            padding-bottom: 5rem !important;
-        }
-
-        /* 4. フッター（Made with Streamlit）を非表示 */
-        footer {
-            display: none !important;
-        }
-
-        /* 5. 表がスマホの幅を突き抜けないようにする */
-        .stDataFrame {
-            width: 100% !important;
+            padding-top: 1.5rem !important; /* 少しだけ隙間を開けて、マークと重なりにくくする */
+            padding-bottom: 5rem !important; /* 下に余白を作り、最後までスクロールしやすくする */
         }
     </style>
     """, unsafe_allow_html=True)
-
-# --- カスタムCSSで再調整（サイドバーボタンを救出） ---
-st.markdown("""
-    <style>
-        /* 1. 最上部の文字が消えないよう、上の余白を少し広めに確保 (2.5rem) */
-        .block-container {
-            padding-top: 2.5rem !important;
-        }
-
-        /* 2. 要素間の隙間(gap)を完全にゼロにする */
-        [data-testid="stVerticalBlock"] {
-            gap: 0rem !important;
-        }
-        
-        /* 3. 各パーツ(圃場名、日付、表)の上下の余白を最小化 */
-        [data-testid="stVerticalBlock"] > div {
-            margin-top: 0rem !important;
-            margin-bottom: 0.2rem !important;
-            padding-top: 0rem !important;
-            padding-bottom: 0rem !important;
-        }
-
-        /* 4. サイドバーボタンをタイトルの邪魔にならない位置へ */
-        button[kind="header"] {
-            top: 1.0rem !important;
-        }
-    </style>
-""", unsafe_allow_html=True)
 
 # ブラウザの自動翻訳を防ぐための設定
 st.markdown('<meta name="google" content="notranslate">', unsafe_allow_html=True)
