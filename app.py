@@ -6,31 +6,40 @@ from datetime import datetime, timedelta
 st.set_page_config(
     page_title="芦北の「たんぼ」",
     page_icon="ine_icon_1024.png",
-    layout="centered",                # スマホでは "centered" の方が表が収まりやすいです
+    layout="centered",
     initial_sidebar_state="collapsed"
 )
 
-# ▼ ここから：邪魔なマークを消し、余白を詰める設定
+# ▼ 強制的に邪魔な要素を消去する設定
 st.markdown("""
     <style>
-        /* 1. 画面上部の余白を削る */
-        .block-container {
-            padding-top: 1rem;
-            padding-bottom: 2rem;
+        /* 1. 画面上部のヘッダー（三本線メニューやGitHubバッジ）を完全に消去 */
+        header[data-testid="stHeader"] {
+            display: none !important;
         }
 
-        /* 2. 右上のメニュー(三本線)とGitHubバッジを完全に隠す */
-        #MainMenu {visibility: hidden;}
-        header {visibility: hidden;}
-        footer {visibility: hidden;}
+        /* 2. 右上のツールバーを非表示 */
+        div[data-testid="stToolbar"] {
+            display: none !important;
+        }
 
-        /* 3. スマホで表の横幅が画面に収まるようにする */
+        /* 3. 画面最上部の余白をゼロにする */
+        .block-container {
+            padding-top: 0rem !important;
+            padding-bottom: 5rem !important;
+        }
+
+        /* 4. フッター（Made with Streamlit）を非表示 */
+        footer {
+            display: none !important;
+        }
+
+        /* 5. 表がスマホの幅を突き抜けないようにする */
         .stDataFrame {
             width: 100% !important;
         }
     </style>
     """, unsafe_allow_html=True)
-# ▲ ここまでを追加
 
 # --- カスタムCSSで再調整（サイドバーボタンを救出） ---
 st.markdown("""
