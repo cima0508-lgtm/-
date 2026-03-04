@@ -4,11 +4,33 @@ from datetime import datetime, timedelta
 
 # --- ページ設定 ---
 st.set_page_config(
-    page_title="芦北の「たんぼ」",                # タブのタイトル
-    page_icon="ine_icon_1024.png",             # 画像ファイルを指定
-    layout="wide",                             # "centered" から "wide" に変更して崩れを確認
-    initial_sidebar_state="collapsed"          # スマホ表示のためにサイドバーを閉じておく
+    page_title="芦北の「たんぼ」",
+    page_icon="ine_icon_1024.png",
+    layout="centered",                # スマホでは "centered" の方が表が収まりやすいです
+    initial_sidebar_state="collapsed"
 )
+
+# ▼ ここから：邪魔なマークを消し、余白を詰める設定
+st.markdown("""
+    <style>
+        /* 1. 画面上部の余白を削る */
+        .block-container {
+            padding-top: 1rem;
+            padding-bottom: 2rem;
+        }
+
+        /* 2. 右上のメニュー(三本線)とGitHubバッジを完全に隠す */
+        #MainMenu {visibility: hidden;}
+        header {visibility: hidden;}
+        footer {visibility: hidden;}
+
+        /* 3. スマホで表の横幅が画面に収まるようにする */
+        .stDataFrame {
+            width: 100% !important;
+        }
+    </style>
+    """, unsafe_allow_html=True)
+# ▲ ここまでを追加
 
 # --- カスタムCSSで再調整（サイドバーボタンを救出） ---
 st.markdown("""
