@@ -244,9 +244,13 @@ if actual_heading_date:
     status_msg = "✅ 出穂実績に基づき計算"
     # 表示用の日付ラベルを作成
     date_label = f"📅 出穂実績日: {actual_heading_date.strftime('%Y/%m/%d')}"
+    # 表示用の日付ラベルを作成
+    date_label = f"📅 出穂実績日: {actual_heading_date.strftime('%Y/%m/%d')}"
 else:
     base_heading_date = planting_date + timedelta(days=int(row["出穂までの日数"]))
     status_msg = "💡 予測出穂日に基づき計算"
+    # 表示用の日付ラベルを作成
+    date_label = f"📅 設定田植日: {planting_date.strftime('%Y/%m/%d')}"
     # 表示用の日付ラベルを作成
     date_label = f"📅 設定田植日: {planting_date.strftime('%Y/%m/%d')}"
 
@@ -286,6 +290,22 @@ if st.session_state.show_water:
         unsafe_allow_html=True
     )
 
+
+    # ▼ タイトルサイズをF3相当に変更（中央寄せ）
+    st.markdown(
+        """
+        <div style="
+            text-align:center;
+            font-size:18px;
+            font-weight:600;
+            margin-bottom:10px;
+        ">
+        💧 生育ステージ別 水管理・防除
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
     html_content = """
     <div style="font-family: sans-serif; background-color: #f9f9f9; padding: 8px; border-radius: 8px;">
         <style>
@@ -305,10 +325,12 @@ if st.session_state.show_water:
     """
     st.components.v1.html(html_content, height=380, scrolling=True)
 
+
     # 閉じるボタン
     if st.button("❌ 管理画面を閉じる"):
         st.session_state.show_water = False
         st.rerun()
+
 
     st.markdown("---")
 
