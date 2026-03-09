@@ -2,21 +2,61 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime, timedelta
 
-
 # --- ページ設定 ---
 st.set_page_config(
     page_title="芦北の「たんぼ」",
     page_icon="ine_icon_1024.png",
-    layout="centered"
+    layout="centered",                # wideよりcenteredの方がスマホでは安定します
+    initial_sidebar_state="collapsed"
 )
 
-# ブラウザ翻訳防止
+# ▼ これだけ残しておくと、スマホで「一番上までスッキリ」見えます
+st.markdown("""
+    <style>
+        .block-container {
+            padding-top: 1.5rem !important; /* 少しだけ隙間を開けて、マークと重なりにくくする */
+            padding-bottom: 5rem !important; /* 下に余白を作り、最後までスクロールしやすくする */
+        }
+    </style>
+    """, unsafe_allow_html=True)
+
+# --- カスタムCSSで再調整（サイドバーボタンを救出） ---
+st.markdown("""
+    <style>
+        /* 1. 最上部の文字が消えないよう、上の余白を少し広めに確保 (2.5rem) */
+        .block-container {
+            padding-top: 2.5rem !important;
+        }
+
+        /* 2. 要素間の隙間(gap)を完全にゼロにする */
+        [data-testid="stVerticalBlock"] {
+            gap: 0rem !important;
+        }
+        
+        /* 3. 各パーツ(圃場名、日付、表)の上下の余白を最小化 */
+        [data-testid="stVerticalBlock"] > div {
+            margin-top: 0rem !important;
+            margin-bottom: 0.2rem !important;
+            padding-top: 0rem !important;
+            padding-bottom: 0rem !important;
+        }
+
+        /* 4. サイドバーボタンをタイトルの邪魔にならない位置へ */
+        button[kind="header"] {
+            top: 1.0rem !important;
+        }
+    </style>
+""", unsafe_allow_html=True)
+
+# ブラウザの自動翻訳を防ぐための設定
 st.markdown('<meta name="google" content="notranslate">', unsafe_allow_html=True)
 st.markdown('<html lang="ja">', unsafe_allow_html=True)
 
-# --- タイトル表示 ---
-st.markdown("<h2 style='text-align: center; font-size: 24px;'>🌾 水稲生育・収穫システム</h2>", unsafe_allow_html=True)
-st.markdown("<h3 style='text-align: center; font-size: 18px; color: #555;'>芦北の「たんぼ」</h3>", unsafe_allow_html=True)
+# --- タイトルとサブタイトルの表示 ---
+# 念のため、タイトル自体の上のマージンも0に指定しておきます
+st.markdown("<h2 style='text-align: center; font-size: 24px; margin-top: 0;'>🌾 水稲生育・収穫システム</h2>", unsafe_allow_html=True)
+st.markdown("<h3 style='text-align: center; font-size: 18px; color: #555; margin-top: -10px;'>芦北の「たんぼ」</h3>", unsafe_allow_html=True)
+
 
 # --- データの読み込み関数 ---
 @st.cache_data
@@ -52,15 +92,82 @@ def predict_harvest(heading_date, target_temp, current_temps, last_temps, correc
         check_date += timedelta(days=1)
     return None, 0, False
 
+# ==============================================================================
+# 💡 ここに移動してください（カレンダーを使う関数は先に定義）
+# ==============================================================================
+def color_rows(row):
+    import datetime
+    today = datetime.date.today()
+
+    # 色のデフォルト設定
+    text_color = "#000000" # 実績は黒
+    font_weight = "bold"   # 実績は太字
+
+    # 1. 🚩 出穂(基準) は赤
+    if "出穂(基準)" in str(row['作業項目']):
+        return ['color: #FF0000; font-weight: bold;'] * len(row)
+
+    # 2. 🌾 収穫適期 は緑
+    if "収穫適期" in str(row['作業項目']):
+        return ['color: #008000; font-weight: bold;'] * len(row)
+
+    # 3. 日付による未来判定（グレーにする条件）
+    p_date = row['予定日']
+
+    # 予定日が「今日以降」ならグレーにする判定
+    is_future = False
+    try:
+        if hasattr(p_date, 'date'): # datetime型の場合
+            if p_date.date() >= today:
+                is_future = True
+        elif isinstance(p_date, datetime.date): # date型の場合
+            if p_date >= today:
+                is_future = True
+    except:
+        pass # 判定できない場合は黒（濃い色）のまま
+
+    if is_future:
+        text_color = "#A0A0A0" # 未来はグレー
+        font_weight = "normal" # 未来は細字
+
+    return [f'color: {text_color}; font-weight: {font_weight};'] * len(row)
+
 # --- メイン処理 ---
 df = load_master_data()
+
 
 # --- サイドバー：選択メニュー ---
 st.sidebar.header("📋 選択メニュー")
 hinsyu_list = df['品種名'].unique().tolist()
 selected_hinsyu = st.sidebar.selectbox("1. 品種を選択", hinsyu_list)
 available_hojo = df[df['品種名'] == selected_hinsyu]['圃場名'].tolist()
+
+# 2. 圃場を選択
 selected_hojo = st.sidebar.selectbox("2. 圃場を選択", available_hojo)
+
+# ==========================================
+# 💡 ここに移動：圃場のすぐ下に解説を表示
+# ==========================================
+with st.sidebar.expander("📖 作業項目用語解説"):
+    st.markdown("""
+    <div style="font-size: 12px; line-height: 1.6; color: #333;">
+        <b>● 中干し</b><br>
+        水を抜き地面にヒビを入れる。根を強くし、茎の増えすぎを抑える。<br><br>
+        <b>● 穂肥（ほごえ）</b><br>
+        お米の粒を大きくするための肥料。時期が重要。<br><br>
+        <b>● 幼穂形成期</b><br>
+        茎の中で「穂の赤ちゃん」ができる時期。水が必要。<br><br>
+        <b>● 穂ばらみ期</b><br>
+        穂が大きくなり、茎がふくらんでくる時期。<br><br>
+        <b>● 出穂（しゅっすい）</b><br>
+        茎から穂が出てくること。田んぼ全体の5割が出た日が基準。<br><br>
+        <b>● 登熟期（とうじゅくき）</b><br>
+        お米にデンプンがたまり、中身が詰まっていく時期。<br><br>
+        <b>● 落水</b><br>
+        収穫に向けて田んぼの水を完全に抜くこと。
+    </div>
+    """, unsafe_allow_html=True)
+
 selected_name = f"{selected_hinsyu}（{selected_hojo}）"
 
 match_row = df[(df['品種名'] == selected_hinsyu) & (df['圃場名'] == selected_hojo)]
@@ -68,6 +175,7 @@ if match_row.empty:
     st.error("該当するデータが見つかりません。")
     st.stop()
 row = match_row.iloc[0]
+
 
 # --- セッション状態の初期化 ---
 if 'show_water' not in st.session_state:
@@ -134,19 +242,25 @@ last_temps = load_temp_data(f"{current_year-1}data.csv")
 if actual_heading_date:
     base_heading_date = actual_heading_date
     status_msg = "✅ 出穂実績に基づき計算"
+    # 表示用の日付ラベルを作成
+    date_label = f"📅 出穂実績日: {actual_heading_date.strftime('%Y/%m/%d')}"
 else:
     base_heading_date = planting_date + timedelta(days=int(row["出穂までの日数"]))
     status_msg = "💡 予測出穂日に基づき計算"
-
-correction = (row["圃場標高"] - row["アメダス標高"]) / 100 * 0.6
-harvest_date, total_temp, is_forecast = predict_harvest(base_heading_date, row["目標積算温度（収穫）"], current_temps, last_temps, correction)
+    # 表示用の日付ラベルを作成
+    date_label = f"📅 設定田植日: {planting_date.strftime('%Y/%m/%d')}"
 
 # ==========================================
 # 🚀 画面表示ここから
 # ==========================================
 
-# 1. 📍 圃場情報
-st.info(f"📍 **{row['圃場名']}** {status_msg}")
+# 1. 📍 圃場情報（品種名を追加）
+# row['品種名'] を使って、品種と圃場をセットで表示します
+st.info(f"🌾 **品種: {row['品種名']}** ／ 📍 **圃場: {row['圃場名']}**\n\n({date_label})\n\n{status_msg}")
+
+correction = (row["圃場標高"] - row["アメダス標高"]) / 100 * 0.6
+harvest_date, total_temp, is_forecast = predict_harvest(base_heading_date, row["目標積算温度（収穫）"], current_temps, last_temps, correction)
+
 
 # 2. 💧 水管理・防除パネル（ボタン判定をここに直結）
 st.sidebar.markdown("---")
@@ -156,7 +270,22 @@ if st.sidebar.button("💧 水管理・防除を確認"):
 
 # 「表示フラグ」がTrueの時だけ、カレンダーの上に表示する
 if st.session_state.show_water:
-    st.subheader("💧 生育ステージ別 水管理・防除")
+
+    # ▼ タイトルサイズをF3相当に変更（中央寄せ）
+    st.markdown(
+        """
+        <div style="
+            text-align:center;
+            font-size:18px;
+            font-weight:600;
+            margin-bottom:10px;
+        ">
+        💧 生育ステージ別 水管理・防除
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
     html_content = """
     <div style="font-family: sans-serif; background-color: #f9f9f9; padding: 8px; border-radius: 8px;">
         <style>
@@ -175,43 +304,62 @@ if st.session_state.show_water:
     </div>
     """
     st.components.v1.html(html_content, height=380, scrolling=True)
-    
+
     # 閉じるボタン
     if st.button("❌ 管理画面を閉じる"):
         st.session_state.show_water = False
         st.rerun()
-    
+
     st.markdown("---")
 
-# 3. 📅 工程カレンダー
+# A. まず、データを準備する（data_listを定義）
+today_val = datetime.now().date()
+
+# --- 3. 📅 工程カレンダー ---
 st.write("### 📅 工程カレンダー")
 
+# 【1】まず最初にデータを定義する（これで NameError を防ぎます）
 today_val = datetime.now().date()
 data_list = [
-    {"作業項目": "🚜 中干し開始目安", "予定日": (planting_date + timedelta(days=40)), "確定": today_val >= (planting_date + timedelta(days=40))},
-    {"作業項目": "💎 穂肥１", "予定日": (base_heading_date - timedelta(days=25)), "確定": today_val >= (base_heading_date - timedelta(days=25))},
-    {"作業項目": "🌿 幼穂形成期", "予定日": (base_heading_date - timedelta(days=20)), "確定": today_val >= (base_heading_date - timedelta(days=20))},
-    {"作業項目": "💎 穂肥２", "予定日": (base_heading_date - timedelta(days=10)), "確定": today_val >= (base_heading_date - timedelta(days=10))},
-    {"作業項目": "🌾 穂ばらみ期", "予定日": (base_heading_date - timedelta(days=7)), "確定": today_val >= (base_heading_date - timedelta(days=7))},
-    {"作業項目": "🚩 出穂(基準)", "予定日": base_heading_date, "確定": actual_heading_date is not None},
-    {"作業項目": "💧 乳熟期", "予定日": (base_heading_date + timedelta(days=10)), "確定": today_val >= (base_heading_date + timedelta(days=10))},
-    {"作業項目": "☁️ 登熟期", "予定日": (base_heading_date + timedelta(days=20)), "確定": today_val >= (base_heading_date + timedelta(days=20))},
-    {"作業項目": "🚿 落水期", "予定日": (base_heading_date + timedelta(days=30)), "確定": today_val >= (base_heading_date + timedelta(days=30))},
-    {"作業項目": "🌾 収穫適期(予測)", "予定日": harvest_date if harvest_date else "計算中...", "確定": False},
+    {"作業項目": "🚜 中干し開始目安", "予定日": (planting_date + timedelta(days=40))},
+    {"作業項目": "💎 穂肥１", "予定日": (base_heading_date - timedelta(days=25))},
+    {"作業項目": "🌿 幼穂形成期", "予定日": (base_heading_date - timedelta(days=20))},
+    {"作業項目": "💎 穂肥２", "予定日": (base_heading_date - timedelta(days=10))},
+    {"作業項目": "🌾 穂ばらみ期", "予定日": (base_heading_date - timedelta(days=7))},
+    {"作業項目": "🚩 出穂(基準)", "予定日": base_heading_date},
+    {"作業項目": "💧 乳熟期", "予定日": (base_heading_date + timedelta(days=10))},
+    {"作業項目": "☁️ 登熟期", "予定日": (base_heading_date + timedelta(days=20))},
+    {"作業項目": "🚿 落水期", "予定日": (base_heading_date + timedelta(days=30))},
+    {"作業項目": "🌾 収穫適期(予測)", "予定日": harvest_date if harvest_date else "計算中..."},
 ]
 
+# 【2】データフレームを作成
 df_display = pd.DataFrame(data_list)
-df_display["予定日"] = df_display["予定日"].apply(lambda x: x.strftime('%m/%d') if hasattr(x, 'strftime') else x)
 
-def color_rows(row):
-    if "出穂(基準)" in str(row['作業項目']): return ['color: #FF0000; font-weight: bold;'] * len(row)
-    if "収穫適期" in str(row['作業項目']): return ['color: #008000; font-weight: bold;'] * len(row)
-    if not row['確定']: return ['color: #A0A0A0; font-weight: normal;'] * len(row)
-    return ['color: #000000; font-weight: bold;'] * len(row)
+# 【3】色塗りと日付フォーマットを一括適用
+# .style.apply で色を決め、.format で見た目を 05/20 にします
+try:
+    styled_df = df_display.style.apply(color_rows, axis=1).format({
+        "予定日": lambda x: x.strftime('%m/%d') if hasattr(x, 'strftime') else str(x)
+    })
+    # 表示
+    st.table(styled_df)
+except Exception as e:
+    # 万が一エラーが出た場合は普通の表を表示（全消え防止）
+    st.table(df_display)
 
-st.dataframe(df_display.style.apply(color_rows, axis=1), width=600, column_config={"確定": None}, hide_index=True)
-st.caption("※ 中干しは1株の茎数が20〜25本になったら開始してください。 / ※ 草刈は出穂14日前までに済ませてください。")
-st.write(f"（※標高補正: {correction:.2f}℃ を減算）")
+# 【4】注釈を表示
+st.markdown(
+    f"""
+    <div style="font-size: 11px; color: gray; line-height: 1.2; margin-top: 5px;">
+        ※中干し:茎数20-25本で開始 / ※草刈:出穂14日前までに完了<br>
+        （※標高補正: {correction:.2f}℃ 減算）
+    </div>
+    """,
+    unsafe_allow_html=True
+)
+
+# --- 以下、説明書などのコードが続く ---
 
 # --- 説明書 ---
 st.write("---")
